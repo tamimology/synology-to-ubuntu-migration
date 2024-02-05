@@ -22,6 +22,8 @@
 8. <a href="#migrating-docker-containers-environments">Migrating docker containers environments</a>
 9. <a href="#adding-a-bit-of-security-to-the-mini-pc">Adding a bit of security to the Mini-PC</a>
 10. <a href="#easy-access-the-docker-compose-file">Easy access the docker-compose file</a>
+11. <a href="#my-ram-usage-is-leaking">My RAM usage is Leaking</a>
+
 
 
 ## Downloading and Installing Ubuntu Server
@@ -347,6 +349,7 @@ sudo apt install nfs-kernel-server
 
 - Add the below line at the end of the file, assuming the mount folder on the Mini-PC are located at _/home/USER/docker_, and the Laptop IP is static at 192.168.1.100
 `/home/USER/docker 192.168.1.100(rw,sync,no_subtree_check)`
+#### press _Ctrl+X_, then _y_ and press enter to save and exit
 
 - Reload the changes, and apply them by `sudo systemctl restart nfs-kernel-server`
 
@@ -360,7 +363,7 @@ sudo apt install nfs-common
 - Make the mapping folder by `mkdir /home/USER/minipc-docker`
 
 
-- Check that both are able to see and commnicate with each other, execute `sudo showmount -e 192.168.1.5` and yiu shall see something like this
+- Check that both are able to see and commnicate with each other, execute `sudo showmount -e 192.168.1.5` and you shall see something like this
 
 ```
 Export list for 192.168.1.5:
@@ -371,6 +374,7 @@ Export list for 192.168.1.5:
 
 - If the folder was mounted successfuly, make the mounting automatically on boot by adding it to the fstab by `sudoedit /etc/fstab` and add the following line at the end of the file
 `192.168.1.5:/home/USER/docker  /home/USER/minipc-docker	nfs     defaults        0 0`
+#### press _Ctrl+X_, then _y_ and press enter to save and exit
 
 - Reload the changes, and have them ready to be auto-applied on the next boot
 ```
@@ -378,6 +382,92 @@ sudo systemctl daemon-reload
 
 sudo findmnt --verify
 ```
+
+
+## My RAM usage is Leaking
+
+After I finished setting up everything and started using it as my main server host, I noticed that the RAM usage starts at ~25% on boot time, and then keeps on increasing till it reaches ~95% and stays there. Then, swap is used!!!!
+
+![ram-usage](screenshots/ram-usage.jpg)
+![ram-swap-usage](screenshots/ram-swap-usage.jpg)
+
+You can simply check the usage by executing the command `free -m`
+![free-m.](screenshot/free-m.jpg)
+
+Tried to troubleshoot what is going on, find the leak, is it from the system setup, swap allocation, hawrdware or even the docker containers. None was the answer, specially that the maximum docker usage for a container did not exceed 2.5%
+
+I came to the fact that it is a kernel issue, as in version 6.5, the kernel starts to leak RAM usage to the maximum. So I need to downgrade to an earlier version.
+
+To check your kernel version, simply execute `uname -r`
+
+Now, how to downgrade it? Simply follow those steps:
+- First, we need to download a bash tool that fetches for the kernel versions available and then automatically downloads the desired kernel version
+#### for me I downloaded this tool under the _docker_ folder I have created
+
+`wget https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh`
+
+- Then make this tool executable
+`chmod +x ubuntu-mainline-kernel.sh`
+
+- Search for the availabe kerne version available
+#### for me, I have chosen v 5.15
+
+`./ubuntu-mainline-kernel.sh -r | grep 5.15`
+
+- Based on the results, choos the built number and download it (this time it must be in sudo mode for installation)
+#### for me, I have chosen 90
+
+`sudo ./ubuntu-mainline-kernel.sh -i v5.15.90`
+
+- Check what are the entries avaialbe in the GRUB Bootloader, as this will be used to edit the default kernel on boot
+`grep 'menuentry \|submenu ' /boot/grub/grub.cfg | cut -f2 -d "'"`
+
+![grub-menu-items](screenshots/grub-menu-items.png)
+
+- Edit the grub menu to boot to the installed kernel
+`sudoedit /etc/default/grub`
+
+- Now replace _`GRUB_DEFAULT=0`_ to _`GRUB_DEFAULT="Advanced options for Ubuntu>Ubuntu, with Linux 5.15.90-051590-generic"`_
+#### press _Ctrl+X_, then _y_ and press enter to save and exit
+
+- Update GRUB by `sudo update-grub`
+
+![update-grub](screenshots/update-grub.png)
+
+- Reboot the host `sudo reboot now`
+
+- Once booted up, check that you have done all the steps correctly by verifying the kernel by `uname -r` and the RAM usage by `free -m`
+
+After you have successfully downgraded the kernel, check the RAM usage and it should be stabilsed somehwere between 25% and 28%
+![updated-ram](screenshots/updated-ram.png)
+
+
+Last thing is to remove the previously installed kernel v6.5.0
+
+- Take note of the installed kernels when executing `dpkg --list | grep linux-image`
+#### for me, they were 6.5.0-14, 6.5.0-15 and 6.5.0-9
+
+![installed-kernels](screenshots/installed-kernels.png)
+
+- Uninstall the kernels by executing the below command, and this will remove all three for me as they are all v6.5.0 but differnet builts
+
+```
+sudo apt remove linux-headers-6.5.0*
+sudo apt remove linux-image-6.5.0*
+sudo apt remove linux-modules-6.5.0*
+```
+
+- Last step is re-edit the GRUB menu and make it boot the installed kernel, regadless of the version, so that if the kernel was updated to a later built, it boots automatically
+`sudoedit /etc/default/grub`
+
+- Now replace _`GRUB_DEFAULT="Advanced options for Ubuntu>Ubuntu, with Linux 5.15.90-051590-generic"`_ back to _`GRUB_DEFAULT=0`_
+#### press _Ctrl+X_, then _y_ and press enter to save and exit
+
+- Reboot the host `sudo reboot now` and once booted, re-check that you are still on the desired kernel by `uname -r` as well as the RAM usage by `free -m`
+
+![ram-usage-new](screenshots/ram-usage-new.png)
+![ram-swap-usage-new](screenshots/ram-swap-usage-new.jpg)
+
 
 
 
