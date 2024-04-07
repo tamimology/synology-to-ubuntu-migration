@@ -23,7 +23,7 @@
 9. <a href="#adding-a-bit-of-security-to-the-mini-pc">Adding a bit of security to the Mini-PC</a>
 10. <a href="#easy-access-the-docker-compose-file">Easy access the docker-compose file</a>
 11. <a href="#my-ram-usage-is-leaking">My RAM usage is Leaking</a>
-
+12. <a href="#missed-timezone-setting">Missed Timezone Setting</a>
 
 
 ## Downloading and Installing Ubuntu Server
@@ -468,6 +468,22 @@ sudo apt remove linux-modules-6.5.0*
 ![ram-usage-new](screenshots/ram-usage-new.png)
 ![ram-swap-usage-new](screenshots/ram-swap-usage-new.jpg)
 
+
+## Missed Timezone Setting
+
+In case you missed settign the Timezone during installaion (like what happened with me), you can still re-configure it to the correct time zone.
+
+First, double check that the timezone is incorrectly set by executing `timedatectl`. In my case, it was set to Etc/UTC as in below
+
+![tz-utc](screenshots/tz-utc.png)
+
+Second, find the desired Timezone name isntalled on the system by executing `timedatectl list-timezones | grep -i melbourne`. Take note of the reuslts. In my case it is `Australia/Melbourne`
+
+Third, change the time zone to match the needed one by exceuting `sudo timedatectl set-timezone Australia/Melbourne`
+
+Lastly, check that the timezone has been set as required by executing `timedatectl` and seeing it is changed to `Australia/Melbourne`
+
+![tz-mel](screenshots/tz-mel.png)
 
 
 
