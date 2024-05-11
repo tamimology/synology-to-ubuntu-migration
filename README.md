@@ -18,12 +18,15 @@
 4. <a href="#headless-operation">Headless operation</a>
 5. <a href="#installing-docker-and-docker-compose">Installing docker and docker-compose</a>
 6. <a href="#mounting-folders-on-synology-mini-pc-and-laptop">Mounting folders on Synology Mini-PC and Laptop</a>
-7. <a href="#copying-configuaration-files-from-synology">Copying configuaration files from Synology</a>
+7. <a href="#copying-configuaration-files-from-synology">Copying configuration files from Synology</a>
 8. <a href="#migrating-docker-containers-environments">Migrating docker containers environments</a>
 9. <a href="#adding-a-bit-of-security-to-the-mini-pc">Adding a bit of security to the Mini-PC</a>
 10. <a href="#easy-access-the-docker-compose-file">Easy access the docker-compose file</a>
 11. <a href="#my-ram-usage-is-leaking">My RAM usage is Leaking</a>
 12. <a href="#missed-timezone-setting">Missed Timezone Setting</a>
+13. <a href="#install-tailscale-vpn">Install Tailscale VPN</a>
+14. <a href="#openssh">OpenSSH</a>
+15. <a href="#ssh-public-keys">SSH Public Keys</a>
 
 
 ## Downloading and Installing Ubuntu Server
@@ -46,11 +49,11 @@ The installation steps are very easy. Just follow what is on the screen. Just ma
 
 ## Fix GRUB to have the dual boot
 
-#### This step is only needed if the Mini-PC came with a pre-installed Windows, and need to keep this original installation along-side Ubuntu Server (just like my case_
+#### This step is only needed if the Mini-PC came with a pre-installed Windows, and needs to keep this original installation alongside Ubuntu Server (just like my case_
 
-_There might be a simnplar way, but I am not aware of. The below steps are what I have personally done and worked fine for me_
+_There might be a simpler way, but I am not aware of. The below steps are what I have personally done and worked fine for me_
 
-- Download any copy of Ubunut or LinuxMint with a UI
+- Download any copy of Ubuntu or LinuxMint with a UI
 - Copy it to a USB and make it bootable
 - Boot into this image, I used LinuxMint 21
 
@@ -64,7 +67,7 @@ _There might be a simnplar way, but I am not aware of. The below steps are what 
 
 ![boot-repair](screenshots/boot-repair.png)
 
-- Last step is to make sure that you have selected 'Reinstall GRUB' before clicking 'Apply'
+- The last step is to make sure that you have selected 'Reinstall GRUB' before clicking 'Apply'
 
 ![boot-repair-grub](screenshots/boot-repair-grub.png)
 
@@ -124,11 +127,11 @@ Now, when all is successful, you can move the mini-pc and install it in your ser
 
 ### Use [Snowflake](https://github.com/subhra74/snowflake) as it is a cross-platform free SSH tool, for both Windows and Linux
 
-Once installed, it is straight forward to SSH into the mini-pc, it will look like this
+Once installed, it is straightforward to SSH into the mini-pc, it will look like this
 
 ![ssh](screenshots/ssh.png)
 
-All the next steps will be done throguh this terminal, and this is called the *Headless Mode*, becuase the mini-pc is connected to the local network, and accessed remotely through a laptop, rather than connecting it to a monitor and keyboard and use it. This is what a server should look like
+All the next steps will be done through this terminal, and this is called the *Headless Mode*, because the mini-pc is connected to the local network, and accessed remotely through a laptop, rather than connecting it to a monitor and keyboard and using it. This is what a server should look like
 
 ## Installing docker and docker-compose
 
@@ -164,7 +167,7 @@ sudo apt-get update
 - Verify the success of the installation
 `sudo docker run hello-world`
 
-If successfull, you should get something like this
+If successful, you should get something like this
 
 ![docker_verification](screenshots/docker-verification.png)
 
@@ -187,7 +190,7 @@ sudo usermod -aG docker $USER
 ### If it was not successfull, refer this [guide](https://docs.docker.com/engine/install/linux-postinstall/) and see what suits your case
 
 
-Last step is to make sure that _docekr_ is started on boot
+The last step is to make sure that _docekr_ is started on boot
 ```
 sudo systemctl enable docker.service
 
@@ -208,7 +211,7 @@ Verify all engines are installed and running by executing `systemctl status dock
 
 Verify the installed version is the latest one by executing `docker --version; docker-compose --version;ctr version`
 
-### You may get a similr docker-compose version as in the one below (personally I faced this issue). In this case, you need to manually update the _docker-compose_ by following the below steps
+### You may get a similar docker-compose version as in the one below (personally I faced this issue). In this case, you need to manually update the _docker-compose_ by following the below steps
 ```
 Docker version 24.0.7, build afdd53b
 Docker Compose version v1.29.2, build unknown
@@ -237,17 +240,17 @@ In this step, we will mount the old docker folder from Synology into the new Min
 
 First, we need to create a mapping folder on the mini-pc. If this folder is on the partition as the Ubuntu Server, then start from step #5
 
-1. Map the other drive (my case, I have 128gb nvme for the OS, and 500gb SATA for the docker configuration files and volume mounting). So I need to auto mount the 500gb partition exceute `lsblk -o NAME,FSTYPE,UUID,MOUNTPOINTS` and take note of the partition UUID, mine is in red below
-#### if the partitons are confudsing and want to have the partition size with the name and then look it in the above results, execute `sudo fdisk -l`
+1. Map the other drive (in my case, I have 128gb nvme for the OS, and 500gb SATA for the docker configuration files and volume mounting). So I need to auto mount the 500gb partition exceute `lsblk -o NAME,FSTYPE,UUID,MOUNTPOINTS` and take note of the partition UUID, mine is in red below
+#### if the partitions are confusing and want to have the partition size with the name and then look it in the above results, execute `sudo fdisk -l`
 
 
 
 ### Make sure that this partition is formatted as ext4, NTFS will have a lot of issues when used with docker volume mounting
  ![uuid](screenshots/uuid.png)
 
-2. Make a folder to mount the this partition at, by exceuting `mkdir /home/USER/docker`
+2. Make a folder to mount this partition at, by executing `mkdir /home/USER/docker`
 
-3. Add this partition to the _fstab_ to have it auto mounted at every boot by excecuting `sudoedit /etc/fstab`, and adding the follwoing line at the end of the file
+3. Add this partition to the _fstab_ to have it auto-mounted at every boot by executing `sudoedit /etc/fstab`, and adding the following line at the end of the file
 `UUID=0ea7f90f-6cd8-4e10-a3d4-4d070da6da7b    /home/USER/docker   ext4    rw,relatime,discard   0    2`
 #### again, press _Ctrl+X_, then _y_ and press enter to save and exit
 
@@ -262,7 +265,7 @@ sudo findmnt --verify
 sudo mount -a
 ```
 
-5. Make a folder to mount the Synology docker folder to, by exceuting `mkdir /home/USER/syno-docker`
+5. Make a folder to mount the Synology docker folder to, by executing `mkdir /home/USER/syno-docker`
 ### Assuming that in Synology (IP 192.168.1.4), the docker files are saved at _/volume1/docker_, then edit fstab and add the below to the end of the file. Just change the *ADMIN* and *PASSWORD*
 
 `//192.168.1.4/syno-docker    /home/USER/syno-docker cifs    username=ADMIN,password=PASSWORD,uid=1000,gid=1000    0       0`
@@ -276,11 +279,11 @@ sudo findmnt --verify
 sudo mount -a
 ```
 
-## Copying configuaration files from Synology
+## Copying configuration files from Synology
 
 After mapping the folders, we are now ready to copy the docker configuration files to the mini-pc by `cp -r /home/USER/syno-docker/ /home/USER/syno-docker/`
 
-Last step is to change the ownership and mode of this folder to make is accessible by the _docker_ group and avoid issues when loading the contaienrs. Simply execute
+The last step is to change the ownership and mode of this folder to make is accessible by the _docker_ group and avoid issues when loading the contaienrs. Simply execute
 ```
 sudo chown -R USER:docker /home/USER/syno-docker/
 
@@ -303,14 +306,14 @@ Before creating the docker containers, just make sure that all environmental var
 - DOWNLOADS
 - BACKUPS
 
-Now, everything is ready, just execute `docker-compose up -d` and all contaienrs will be loaded.
-#### Personally, I prefer to load them one at a time and mnake sure is working with no errors.
+Now, everything is ready, just execute `docker-compose up -d` and all containers will be loaded.
+#### Personally, I prefer to load them one at a time and make sure is working with no errors.
 
 
 ## Adding a bit of security to the Mini-PC
 
 The final 2 steps come into hand, which are:
-1. Having more powerful password
+1. Having a more powerful password
 
   Simply type in `sudo passwd USERNAME`, where _USERNAME_ is the current user logged in
 
@@ -318,7 +321,7 @@ The final 2 steps come into hand, which are:
  ###### [ref](https://askubuntu.com/questions/1479500/how-to-change-the-ssh-port-on-ubuntu-23-04)
 
   We need to edit the sock file that defines the SSH port. To do so, type in `sudoedit /lib/systemd/system/ssh.socket` and add `ListenStream=1122` to the end of the file (_SSH IP will be 1122 in this example_). Make sure it is not there originally. If so, just change the port from 22 to the desired port. Press _Ctrl+X_, then _y_ and press enter to save and exit.
-  Next we need to update and apply the changes made by
+  Next, we need to update and apply the changes made by
   ```
   sudo systemctl daemon-reload
   sudo systemctl restart ssh
@@ -329,14 +332,14 @@ The final 2 steps come into hand, which are:
   ![ssh-port](screenshots/ssh-port.png)
 
 
-  Lastly, log off and SSH again with the new assigned port
+  Lastly, log off and SSH again with the newly assigned port
 
 
 ## Easy Access the docker-compose file
 
 This step is a bonus and only applicable if you are a Linux user (_for Windows users, you need to search for the solution, which i guess it is called Folder Mapping via Explorer_), which I personally prefer to have it, as I like to have access for everything from my laptop in headless mode. In this step, I will mount a folder on my laptop that has all the docker mounting and docker-compose file on the Mini-PC. By that, I can just edit the compose file, as well as create new folders for new containers using my LinuxMint UI installed on the laptop, instead of doing that throguh the terminal on my Mini-PC (easier)
 
-To do so, we need to use the NFS moutning option, as this is used to mount linux-to-linux folders.
+To do so, we need to use the NFS mounting option, as this is used to mount linux-to-linux folders.
 
 ### On the server (Mini-PC)
 - Install NFS
@@ -363,7 +366,7 @@ sudo apt install nfs-common
 - Make the mapping folder by `mkdir /home/USER/minipc-docker`
 
 
-- Check that both are able to see and commnicate with each other, execute `sudo showmount -e 192.168.1.5` and you shall see something like this
+- Check that both are able to see and communicate with each other, execute `sudo showmount -e 192.168.1.5` and you shall see something like this
 
 ```
 Export list for 192.168.1.5:
@@ -372,7 +375,7 @@ Export list for 192.168.1.5:
 
 - Verify the folder can be mounted by executing `sudo mount -t nfs 192.168.1.5:/home/USER/minipc-docker /home/USER/docker`
 
-- If the folder was mounted successfuly, make the mounting automatically on boot by adding it to the fstab by `sudoedit /etc/fstab` and add the following line at the end of the file
+- If the folder was mounted successfully, make the mounting automatic on boot by adding it to the fstab by `sudoedit /etc/fstab` and add the following line at the end of the file
 `192.168.1.5:/home/USER/docker  /home/USER/minipc-docker	nfs     defaults        0 0`
 #### press _Ctrl+X_, then _y_ and press enter to save and exit
 
@@ -394,32 +397,32 @@ After I finished setting up everything and started using it as my main server ho
 You can simply check the usage by executing the command `free -m`
 ![free-m.](screenshot/free-m.jpg)
 
-Tried to troubleshoot what is going on, find the leak, is it from the system setup, swap allocation, hawrdware or even the docker containers. None was the answer, specially that the maximum docker usage for a container did not exceed 2.5%
+Tried to troubleshoot what is going on, and find the leak, is it from the system setup, swap allocation, hardware, or even the docker containers. None was the answer, especially that the maximum docker usage for a container did not exceed 2.5%
 
 I came to the fact that it is a kernel issue, as in version 6.5, the kernel starts to leak RAM usage to the maximum. So I need to downgrade to an earlier version.
 
 To check your kernel version, simply execute `uname -r`
 
-Now, how to downgrade it? Simply follow those steps:
+Now, how to downgrade it? Simply follow the steps:
 - First, we need to download a bash tool that fetches for the kernel versions available and then automatically downloads the desired kernel version
-#### for me I downloaded this tool under the _docker_ folder I have created
+#### For me I downloaded this tool under the _docker_ folder I have created
 
 `wget https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh`
 
 - Then make this tool executable
 `chmod +x ubuntu-mainline-kernel.sh`
 
-- Search for the availabe kerne version available
+- Search for the available kernel version available
 #### for me, I have chosen v 5.15
 
 `./ubuntu-mainline-kernel.sh -r | grep 5.15`
 
-- Based on the results, choos the built number and download it (this time it must be in sudo mode for installation)
+- Based on the results, choose the built number and download it (this time it must be in sudo mode for installation)
 #### for me, I have chosen 90
 
 `sudo ./ubuntu-mainline-kernel.sh -i v5.15.90`
 
-- Check what are the entries avaialbe in the GRUB Bootloader, as this will be used to edit the default kernel on boot
+- Check what are the entries available in the GRUB Bootloader, as this will be used to edit the default kernel on boot
 `grep 'menuentry \|submenu ' /boot/grub/grub.cfg | cut -f2 -d "'"`
 
 ![grub-menu-items](screenshots/grub-menu-items.png)
@@ -438,18 +441,18 @@ Now, how to downgrade it? Simply follow those steps:
 
 - Once booted up, check that you have done all the steps correctly by verifying the kernel by `uname -r` and the RAM usage by `free -m`
 
-After you have successfully downgraded the kernel, check the RAM usage and it should be stabilsed somehwere between 25% and 28%
+After you have successfully downgraded the kernel, check the RAM usage and it should be stabilised somehwere between 25% and 28%
 ![updated-ram](screenshots/updated-ram.png)
 
 
-Last thing is to remove the previously installed kernel v6.5.0
+The last thing is to remove the previously installed kernel v6.5.0
 
 - Take note of the installed kernels when executing `dpkg --list | grep linux-image`
 #### for me, they were 6.5.0-14, 6.5.0-15 and 6.5.0-9
 
 ![installed-kernels](screenshots/installed-kernels.png)
 
-- Uninstall the kernels by executing the below command, and this will remove all three for me as they are all v6.5.0 but differnet builts
+- Uninstall the kernels by executing the below command, and this will remove all three for me as they are all v6.5.0 but different builts
 
 ```
 sudo apt remove linux-headers-6.5.0*
@@ -457,7 +460,7 @@ sudo apt remove linux-image-6.5.0*
 sudo apt remove linux-modules-6.5.0*
 ```
 
-- Last step is re-edit the GRUB menu and make it boot the installed kernel, regadless of the version, so that if the kernel was updated to a later built, it boots automatically
+- The last step is re-edit the GRUB menu and make it boot the installed kernel, regardless of the version so that if the kernel was updated to a later build, it boots automatically
 `sudoedit /etc/default/grub`
 
 - Now replace _`GRUB_DEFAULT="Advanced options for Ubuntu>Ubuntu, with Linux 5.15.90-051590-generic"`_ back to _`GRUB_DEFAULT=0`_
@@ -471,19 +474,83 @@ sudo apt remove linux-modules-6.5.0*
 
 ## Missed Timezone Setting
 
-In case you missed settign the Timezone during installaion (like what happened with me), you can still re-configure it to the correct time zone.
+In case you missed setting the Timezone during installation (like what happened with me), you can still re-configure it to the correct time zone.
 
-First, double check that the timezone is incorrectly set by executing `timedatectl`. In my case, it was set to Etc/UTC as in below
+First, double-check that the timezone is incorrectly set by executing `timedatectl`. In my case, it was set to Etc/UTC as below
 
 ![tz-utc](screenshots/tz-utc.png)
 
-Second, find the desired Timezone name isntalled on the system by executing `timedatectl list-timezones | grep -i melbourne`. Take note of the reuslts. In my case it is `Australia/Melbourne`
+Second, find the desired Timezone name installed on the system by executing `timedatectl list-timezones | grep -i melbourne`. Take note of the results. In my case, it is `Australia/Melbourne`
 
-Third, change the time zone to match the needed one by exceuting `sudo timedatectl set-timezone Australia/Melbourne`
+Third, change the time zone to match the needed one by executing `sudo timedatectl set-timezone Australia/Melbourne`
 
 Lastly, check that the timezone has been set as required by executing `timedatectl` and seeing it is changed to `Australia/Melbourne`
 
 ![tz-mel](screenshots/tz-mel.png)
+
+
+
+## Install Tailscale VPN
+
+In case a VPN is needed to access the Mini-PC (personally I prefer that in case something happens to remote access while away from home), it is advised to install Tailscale VPN as it is the easiest one available.
+
+Simply SSH into the Mini-PC and execute the following (noting to be done, this magic script from Tailscale itself will do the needed)
+`curl -fsSL https://tailscale.com/install.sh | sh`
+
+Once everything is done, simply run Tailscale by `sudo tailscale up`
+
+
+
+## OpenSSH
+
+#### THIS STEP IS ONLY NEEDED FOR UBUNTU 24.04 LTS VERSION AS SSH IS NOT INSTALLED BY DEFUALT DURING INSTALLATION TIME. HOWEVER, IT CAN BE INSTALLED IF NEEDED IN EARLY STAGES, THEN THE BELOW IS NOT NEEDED, ONLY FOLLOW THE STEPS IN CASE IT WAS MISSED AS IN MY CASE
+
+The steps are straightforward, just execute them in the order below:
+```
+sudo apt update
+sudo apt upgrade
+
+sudo apt install ssh
+
+sudo systemctl enable ssh
+```
+
+To check that everything is done properly, check the SSH status by `sudo systemctl status ssh`. If it does not show it is _active_ in green, then start the service by `sudo systemctl start ssh`
+
+![openssh-status](screenshots/openssh-status.png)
+
+##### CHECK [HERE](adding-a-bit-of-security-to-the-mini-pc) TO CHANGE THE SSH PORT 
+
+
+
+## SSH Public Keys
+
+SSH public keys are used as a more secure layer of protection to SSH into a server. It is used instead of the username/password, and it is specific for each device trying to SSH into the server.
+
+To generate and enable public keys for a device, you need to do 2 parts, one on the host (device trying to access; i.e. laptop), and the server; i.e. Mini-PC
+
+1-Host:
+Open the terminal and execute the following to generate a key specific to this host only
+`ssh-keygen -t ed25519`. During this process, you will be prompted for a key name, save it as you wish. For example, here, consider it saved as _host-keys_
+
+Then, you need to insert the generated key into the server to allow the access. Take care of:
+_USER_ to be replaced by the server username used
+_PORT_ to be the SSH port, remove in case it was not changed and kept as the default 22
+
+```
+cat ssh/host-keys.pub | ssh _USER_@192.168.1.5 -p _PORT_ "cat >> ~/.ssh/authorized_keys"
+chmod -R 600 ssh
+```
+
+2-Server:
+Now on the server side, Mini-PC, simply execute `chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys`.
+
+Now everything is set up, and to test, go to the terminal in the host (laptop), and try to SSH into the server (mini-pc) by executing `ssh -i ssh/host-keys _USER_@192.168.1.5 -p _PORT_`
+##### ammend with `-vvv`` to debug
+
+You should be able to enter SSH mode into the server without being asked for any username/password. If you try to execute the above from another laptop that does not have public keys defined, it will fail and will be prompted for a username/password as shown below
+
+![ssh-keys](screenshots/ssh-keys.png)
 
 
 
