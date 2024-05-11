@@ -18,7 +18,7 @@
 4. <a href="#headless-operation">Headless operation</a>
 5. <a href="#installing-docker-and-docker-compose">Installing docker and docker-compose</a>
 6. <a href="#mounting-folders-on-synology-mini-pc-and-laptop">Mounting folders on Synology Mini-PC and Laptop</a>
-7. <a href="#copying-configuaration-files-from-synology">Copying configuration files from Synology</a>
+7. <a href="#copying-configuration-files-from-synology">Copying configuration files from Synology</a>
 8. <a href="#migrating-docker-containers-environments">Migrating docker containers environments</a>
 9. <a href="#adding-a-bit-of-security-to-the-mini-pc">Adding a bit of security to the Mini-PC</a>
 10. <a href="#easy-access-the-docker-compose-file">Easy access the docker-compose file</a>
