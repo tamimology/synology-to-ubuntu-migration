@@ -337,7 +337,9 @@ The final 2 steps come into hand, which are:
 1. Execute `sudoedit /etc/ssh/sshd_config`
 2. Uncomment, by removing the `#` at the beginning of the line that says `Port 54747`
 3. Replace the number 54747 with the desired port you are after, i.e. 1111
+4. check it has been changed by executing `sudo netstat -lntp | grep ssh`
 
+   
   Lastly, log off and SSH again with the newly assigned port
 
 
