@@ -85,12 +85,14 @@ then
 
 `ifconfig` and take note of the ethernet adapter name. Mine was *enp0s31f6*
 
+If this did not work with you and gave a connection error, it is normal as Ubuntu is looking for the package from an online resource, and you can proceed with the next steps.
+
 Now, we need to define the network parameters
 
 Type in
 `ls /etc/netplan/` and take note of the output file there. Mine was `50-cloud-init.yaml`
 
-Now, we need to edit this file and provide the network details, and assign a static ip for the mini-pc
+Now, we need to edit this file and provide the network details, and assign a static IP for the mini-pc
 
 In my case, I have to type
 `sudoedit /etc/netplan/50-cloud-init.yaml`
@@ -101,7 +103,7 @@ A screen will open with some commented values, at the end of that file, enter th
 ```
 network:
     ethernets:
-        enp0s31f6: #the network interface name
+        enp0s31f6: #the network interface name which is initially in the file, keep it, or if not available write it down from the ifconfig above
             renderer: networkd
             addresses:
               - 192.168.1.5/24 #static IP of the mini-pc
@@ -331,6 +333,10 @@ The final 2 steps come into hand, which are:
 
   ![ssh-port](screenshots/ssh-port.png)
 
+### THE ABOVE METHOD MIGHT NOT BE A PERMANENT SOLUTION FOR UBUNTU 24.04 LTS VERSION, THEN YOU WILL NEED THE ALTERNATIVE METHOD BELOW:
+1. Execute `sudoedit /etc/ssh/sshd_config`
+2. Uncomment, by removing the `#` at the beginning of the line that says `Port 54747`
+3. Replace the number 54747 with the desired port you are after, i.e. 1111
 
   Lastly, log off and SSH again with the newly assigned port
 
