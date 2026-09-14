@@ -611,18 +611,20 @@ Press Ctrl+X, then y and press Enter to save and exit. Verify the config file is
 
 Finally, restart the Samba service with `sudo systemctl restart smbd`. Now, Samba sharing has been set up on the Ubuntu server and is ready to be used.
 
-On Android, install Cx File Explorer from [here](https://play.google.com/store/apps/details?id=com.cxinventor.file.explorer) 
-Open the app, , press _Network_ --> _New location_ --> _Remote_ --> _SMB_ 
+On Android, install *Cx File Explorer* from [here](https://play.google.com/store/apps/details?id=com.cxinventor.file.explorer) 
 
-![samba-android-app](screenshots/samba-android-app.jpg)
+Open the app, press _Network_ --> _New location_ --> _Remote_ --> _SMB_ 
+
+<img src="screenshots/samba-android-app.jpg" width=35% height=35%>
 
 Fill as follows: just replace the host IP, _USERNAME_ and the password with the relevant ones as per your setup
 
-![samba-android-new-smb](screenshots/samba-android-new-smb.jpg)
+<img src="screenshots/samba-android-new-smb.jpg" width=35% height=35%>
 
 If everything was set correctly, you will be able to access the server and see a folder named as per the above config, i.e. _my-server_. If you access it, you will see all files/folders under the configured location above, which in this case is _/home/USERNAME_
 
-![samba-android-new-smb](screenshots/samba-android-new-smb.jpg)
+<img src="screenshots/samba-android-new-smb.jpg" width=35% height=35%>
+
 
 
 
